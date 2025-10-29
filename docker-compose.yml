@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # Backend Laravel Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sentiment-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=base64:YourAppKeyHere
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/html/database/database.sqlite
+      - GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
+    networks:
+      - sentiment-network
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Vue.js Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sentiment-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    networks:
+      - sentiment-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ML Python Service (Optional - for development)
+  ml:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    container_name: sentiment-ml
+    volumes:
+      - ./ml:/app
+    environment:
+      - PYTHONPATH=/app
+    networks:
+      - sentiment-network
+    command: tail -f /dev/null  # Keep container running for development
+    profiles:
+      - development  # Only run in development profile
+
+networks:
+  sentiment-network:
+    driver: bridge
+
+volumes:
+  node_modules:

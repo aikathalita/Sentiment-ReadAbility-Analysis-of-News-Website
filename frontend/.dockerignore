@@ -1,0 +1,14 @@
+# Frontend .dockerignore
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+dist/
+coverage/
+.nyc_output
+.cache
+.vscode/
+.idea/
+*.log

@@ -1,0 +1,45 @@
+# Laravel Backend Dockerfile
+FROM php:8.3-cli
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    zip unzip git curl \
+    libzip-dev \
+    poppler-utils \
+    && docker-php-ext-install zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy composer files
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies
+RUN composer install --optimize-autoloader
+
+# Copy source code
+COPY . .
+
+# Create SQLite database directory
+RUN mkdir -p /var/www/html/database && \
+    touch /var/www/html/database/database.sqlite && \
+    chmod 664 /var/www/html/database/database.sqlite
+
+# Set permissions
+RUN mkdir -p /var/www/html/storage/logs && \
+    chmod -R 775 /var/www/html/storage && \
+    chmod -R 775 /var/www/html/bootstrap/cache
+
+# Expose port
+EXPOSE 8000
+
+# Health check for Laravel
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/api/analyze || exit 1
+
+# Start Laravel development server
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
