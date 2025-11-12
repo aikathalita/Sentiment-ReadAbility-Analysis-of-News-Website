@@ -1,6 +1,31 @@
 // API Service untuk komunikasi dengan Laravel backend
 const API_BASE_URL = 'http://localhost:8000'
 
+// export interface AnalysisResult {
+//   text: string
+//   sentiment: string
+//   sentiment_score: number
+//   sentiment_details: string
+//   readability: number
+//   readability_category: string
+//   word_count: number
+//   sentence_count: number
+// }
+
+// --- Tambahkan Interface Baru ---
+export interface EntityThemeData {
+    nama: string
+    magnitudo: number
+    skor_sentimen: number
+}
+
+export interface FleschStatistics {
+    syllable_count: number
+    avg_word_length: number
+    avg_sentence_length: number
+}
+
+// --- Perbarui Interface Utama AnalysisResult ---
 export interface AnalysisResult {
   text: string
   sentiment: string
@@ -10,6 +35,11 @@ export interface AnalysisResult {
   readability_category: string
   word_count: number
   sentence_count: number
+
+  // Data Baru (Dibutuhkan oleh Vue Files)
+  statistics: FleschStatistics // Untuk Readability.vue
+  entitas_terdeteksi: EntityThemeData[] // Untuk Sentiment.vue
+  tema_terdeteksi: EntityThemeData[] // Untuk Sentiment.vue
 }
 
 export class ApiService {
